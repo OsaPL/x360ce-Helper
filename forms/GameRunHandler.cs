@@ -96,14 +96,14 @@ namespace forms
                 {
                     File.Copy(directory + file, Game.GetOnlyPath() + file.Substring(file.LastIndexOf(@"\")), false);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
 
                 }
 
             }
 
-            var confirmResult = MessageBox.Show("Do you want to open x360ce before starting the game?\nIt will edit a game specific configuration.",
+            var confirmResult = MessageBox.Show("Do you want to open x360ce before starting the game?\nIt will edit the game specific configuration.",
                                      "Open configuration",
                                      MessageBoxButtons.YesNo);
             if (confirmResult == DialogResult.Yes)
@@ -127,6 +127,7 @@ namespace forms
                     x360ce.WaitForExit();
                 }
             }
+            DeleteExe();
 
             var gamexec = Process.Start(Game.Directory);
             gamexec.WaitForExit();
@@ -136,6 +137,26 @@ namespace forms
             if (!Game.Keepfiles)
             {
                 this.Clean(true);
+            }
+
+        }
+
+        private void DeleteExe()
+        {
+            try
+            {
+                if (Game.x86)
+                {
+                    File.Delete(Game.GetOnlyPath() + @"\" + "x360ce.exe");
+                }
+                else
+                {
+                    File.Delete(Game.GetOnlyPath() + @"\" + "x360ce_64.exe");
+                }
+            }
+            catch (Exception e)
+            {
+
             }
 
         }
