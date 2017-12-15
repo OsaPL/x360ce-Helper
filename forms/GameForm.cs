@@ -6,6 +6,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -52,6 +53,9 @@ namespace forms
 
         private void addButton_Click(object sender, EventArgs e)
         {
+            if (!ParseData())
+                return;
+
             Game.Name = nameTextBox.Text;
             Game.Directory = directoryTextBox.Text;
             if (x86RadioButton.Checked)
@@ -65,6 +69,23 @@ namespace forms
             Game.Keepfiles = !cleanCheckBox.Checked;
             //this.DialogResult = DialogResult.OK;
             this.Hide();
+        }
+
+        private bool ParseData()
+        {
+            //Directory text
+            try
+            {
+                if (Directory.Exists(Path.GetDirectoryName(directoryTextBox.Text)))
+                    return true;
+                MessageBox.Show("Wrong filepath!");
+                return false;
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show("Wrong filepath!");
+                return false;
+            }
         }
     }
     public class GameTemplate
