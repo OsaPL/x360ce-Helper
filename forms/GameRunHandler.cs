@@ -48,34 +48,16 @@ namespace forms
         {
             if (keepCfg)
             {
-                FilesNeeded.Remove(FilesNeeded.Last());
+                FilesNeeded.Remove(FilesNeeded.Last()); //dont delete game specific UI
             }
             foreach (string file in FilesNeeded)
             {
                 File.Delete(Game.GetOnlyPath() + file.Substring(file.LastIndexOf(@"\")));
             }
         }
-        public void StartExe(string filedirectory)
-        {
-            ProcessStartInfo info = new ProcessStartInfo(filedirectory);
-            info.CreateNoWindow = false;
-            info.UseShellExecute = false;
-            info.RedirectStandardError = true;
-            info.RedirectStandardOutput = true;
-            Process p = new Process();
-            p.StartInfo = info;
-
-            AutoResetEvent wait = new AutoResetEvent(false);
-
-            p.Exited += (s, e) =>
-            {
-                wait.Set();
-            };
-            p.Start();
-            wait.WaitOne();
-        }
         public void Start()
         {
+
             //We get our %CD%
             string path = System.Reflection.Assembly.GetExecutingAssembly().Location;
             var directory = System.IO.Path.GetDirectoryName(path);
@@ -84,7 +66,7 @@ namespace forms
             //1. hide mainform(do not close it!)
             //2. copy all needed files over, if any of them are already there, do a backup
             //3. if user wants, run x360ce to configure
-            //4. if x360ce is not opened, run game      //a timer based listener, check if process by the name exists???
+            //4. if x360ce is not opened, run game   
             //5. after game exit, remove all files
             //6. show main form again
 
@@ -98,48 +80,56 @@ namespace forms
                 }
                 catch (Exception ex)
                 {
-
+                    //TODO: Logging
                 }
 
             }
-
-            var confirmResult = MessageBox.Show("Do you want to open x360ce before starting the game?\nIt will edit the game specific configuration.",
-                                     "Open configuration",
-                                     MessageBoxButtons.YesNo);
-            if (confirmResult == DialogResult.Yes)
+            try
             {
-                if (Game.x86)
+                var confirmResult = MessageBox.Show("Do you want to open x360ce before starting the game?\nIt will edit the game specific configuration.",
+                                         "Open configuration",
+                                         MessageBoxButtons.YesNo);
+                if (confirmResult == DialogResult.Yes)
                 {
-                    ProcessStartInfo startinfo = new ProcessStartInfo();
-                    startinfo.WorkingDirectory = Game.GetOnlyPath();
-                    startinfo.FileName = @"x360ce.exe";
+                    if (Game.x86)
+                    {
+                        ProcessStartInfo startinfo = new ProcessStartInfo();
+                        startinfo.WorkingDirectory = Game.GetOnlyPath();        //to fool x360ce we have to use this new %CD%
+                        startinfo.FileName = @"x360ce.exe";
 
-                    var x360ce = Process.Start(startinfo);
-                    x360ce.WaitForExit();
+                        var x360ce = Process.Start(startinfo);
+                        x360ce.WaitForExit();
+                    }
+                    else
+                    {
+                        ProcessStartInfo startinfo = new ProcessStartInfo();
+                        startinfo.WorkingDirectory = Game.GetOnlyPath();
+                        startinfo.FileName = @"x360ce_x64.exe";
+
+                        var x360ce = Process.Start(startinfo);
+                        x360ce.WaitForExit();
+                    }
                 }
-                else
+                DeleteExe();
+
+                var gamexec = Process.Start(Game.Directory);
+                gamexec.WaitForExit();
+
+                MainForm.Show();
+
+                if (!Game.Keepfiles)
                 {
-                    ProcessStartInfo startinfo = new ProcessStartInfo();
-                    startinfo.WorkingDirectory = Game.GetOnlyPath();
-                    startinfo.FileName = @"x360ce_64.exe";
-
-                    var x360ce = Process.Start(startinfo);
-                    x360ce.WaitForExit();
+                    this.Clean(true);
                 }
+
             }
-            DeleteExe();
-
-            var gamexec = Process.Start(Game.Directory);
-            gamexec.WaitForExit();
-
-            MainForm.Show();
-
-            if (!Game.Keepfiles)
+            catch (Exception ex)
             {
-                this.Clean(true);
+                MessageBox.Show("Error while starting the game! " + ex.ToString());
+                //TODO: Logging
             }
-
         }
+
 
         private void DeleteExe()
         {
@@ -156,7 +146,7 @@ namespace forms
             }
             catch (Exception e)
             {
-
+                //TODO: Logging
             }
 
         }

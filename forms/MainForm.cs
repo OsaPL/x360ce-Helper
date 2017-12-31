@@ -59,9 +59,16 @@ namespace forms
         {
             string path = System.Reflection.Assembly.GetExecutingAssembly().Location;
             var directory = System.IO.Path.GetDirectoryName(path);
+            try
+            {
+                File.Copy(directory + @"\x360ce\x86\x360ce.exe", directory + @"\x360ce\x360ce.exe");
+                File.Copy(directory + @"\x360ce\x86\xinput1_3.dll", directory + @"\x360ce\xinput1_3.dll");
+            }
+            catch (Exception ex)
+            {
 
-            File.Copy(directory + @"\x360ce\x86\x360ce.exe", directory + @"\x360ce\x360ce.exe");
-            File.Copy(directory + @"\x360ce\x86\xinput1_3.dll", directory + @"\x360ce\xinput1_3.dll");
+            }
+
 
             ProcessStartInfo startinfo = new ProcessStartInfo();
             startinfo.WorkingDirectory = directory+@"\x360ce\";
@@ -70,8 +77,16 @@ namespace forms
             var x360ce = Process.Start(startinfo);
             x360ce.WaitForExit();
 
-            File.Delete(directory + @"\x360ce\x360ce.exe");
-            File.Delete(directory + @"\x360ce\xinput1_3.dll");
+            try
+            {
+                File.Delete(directory + @"\x360ce\x360ce.exe");
+                File.Delete(directory + @"\x360ce\xinput1_3.dll");
+            }
+            catch (Exception ex)
+            {
+
+            }
+
         }
 
         private void cleanButton_Click(object sender, EventArgs e)
@@ -107,7 +122,7 @@ namespace forms
             }
             catch(Exception ex)
             {
-                //to ogarnac!!
+                //TODO:Logging!!!!
             }
 
         }
@@ -116,7 +131,15 @@ namespace forms
         {
             string path = System.Reflection.Assembly.GetExecutingAssembly().Location;
             var directory = System.IO.Path.GetDirectoryName(path);
-            File.Delete(directory + @"\Games.cfg");
+
+            try
+            {
+                File.Delete(directory + @"\Games.cfg");
+            }
+            catch(Exception ex)
+            {
+                //TODO:Logging
+            }
 
             foreach (GameTemplate game in gamesListBox.Items)
             {
@@ -133,8 +156,15 @@ namespace forms
         {
             string path = System.Reflection.Assembly.GetExecutingAssembly().Location;
             var directory = System.IO.Path.GetDirectoryName(path);
+            try
+            {
+                File.Delete(directory + @"\x360ce\x360ce.ini");
+            }
+            catch (Exception ex)
+            {
+                //TODO:Logging
+            }
 
-            File.Delete(directory + @"\x360ce\x360ce.ini");
         }
     }
 }
